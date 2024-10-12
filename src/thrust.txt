@@ -1,0 +1,132 @@
+"#!/usr/bin/env python3
+
+import rospy
+from gazebo_msgs.srv import SetModelState
+from gazebo_msgs.msg import ModelState
+from geometry_msgs.msg import Vector3, Quaternion
+import math
+
+class SatelliteController:
+    def __init__(self):
+        rospy.init_node('satellite_controller', anonymous=True)
+        rospy.wait_for_service('/gazebo/set_model_state')
+        self.set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+        
+        # Initial parameters
+        self.current_radius = Vector3(77.71, 77.71, 90)
+        self.target_radius = Vector3(77.71, 77.71, 90)
+        self.current_orientation = Quaternion(0, 0, 0, 1)
+        self.target_orientation = Quaternion(0, 0, 0, 1)
+        
+        # Parameters for orbit and transition
+        self.orbit_speed = 0.01  # radians per second
+        self.transition_duration = 300.0  # Duration for smooth transition in seconds (5 minutes)
+        self.transition_start_time = None
+        self.transition_complete = False
+        
+        rospy.Subscriber('/satellite/trajectory', ModelState, self.update_trajectory)
+        self.rate = rospy.Rate(10)  # 10 Hz
+
+    def update_trajectory(self, msg):
+        # Update target radius and orientation
+        self.target_radius = msg.pose.position
+        self.target_orientation = msg.pose.orientation
+        self.transition_start_time = rospy.get_time()
+        self.transition_complete = False
+
+    def interpolate(self, start, end, duration, elapsed):
+        if elapsed >= duration:
+            return end
+        return start + (end - start) * (elapsed / duration)
+
+    def interpolate_orientation(self, start, end, duration, elapsed):
+        # Simple linear interpolation for quaternion
+        return Quaternion(
+            x=self.interpolate(start.x, end.x, duration, elapsed),
+            y=self.interpolate(start.y, end.y, duration, elapsed),
+            z=self.interpolate(start.z, end.z, duration, elapsed),
+            w=self.interpolate(start.w, end.w, duration, elapsed)
+        )
+
+    def move_satellite(self):
+        while not rospy.is_shutdown():
+            current_time = rospy.get_time()
+            if self.transition_start_time is not None:
+                elapsed_since_transition_start = current_time - self.transition_start_time
+                
+                # Interpolate position and orientation
+                self.current_radius.x = self.interpolate(self.current_radius.x, self.target_radius.x, self.transition_duration, elapsed_since_transition_start)
+                self.current_radius.y = self.interpolate(self.current_radius.y, self.target_radius.y, self.transition_duration, elapsed_since_transition_start)
+                self.current_radius.z = self.interpolate(self.current_radius.z, self.target_radius.z, self.transition_duration, elapsed_since_transition_start)
+                
+                self.current_orientation = self.interpolate_orientation(
+                    self.current_orientation, 
+                    self.target_orientation, 
+                    self.transition_duration, 
+                    elapsed_since_transition_start
+                )
+
+                # Check if transition is complete
+                if elapsed_since_transition_start >= self.transition_duration:
+                    self.current_radius = self.target_radius
+                    self.current_orientation = self.target_orientation
+                    self.transition_start_time = None
+                    self.transition_complete = True
+
+            x = self.current_radius.x * math.cos(self.orbit_speed * current_time)
+            y = self.current_radius.y * math.sin(self.orbit_speed * current_time)
+            z = self.current_radius.z  # Keeping z constant for simplicity
+
+            state_msg = ModelState()
+            state_msg.model_name = 'chief'
+            state_msg.pose.position.x = x
+            state_msg.pose.position.y = y
+            state_msg.pose.position.z = z
+            state_msg.pose.orientation = self.current_orientation
+            
+            try:
+                self.set_state_service(state_msg)
+            except rospy.ServiceException as e:
+                rospy.logerr(f"Service call failed: {e}")
+
+            self.rate.sleep()
+
+if __name__ == '__main__':
+    try:
+        controller = SatelliteController()
+        controller.move_satellite()
+    except rospy.ROSInterruptException:
+        pass
+" this is my py file to make a satellite revolve around earth,
+
+and "#!/usr/bin/env python3
+
+import rospy
+from geometry_msgs.msg import Vector3, Quaternion
+from gazebo_msgs.msg import ModelState
+
+def publish_trajectory_once():
+    rospy.init_node('trajectory_publisher', anonymous=True)
+    trajectory_pub = rospy.Publisher('/satellite/trajectory', ModelState, queue_size=10)
+
+    # Wait for the publisher to be ready
+    rospy.sleep(2)  # Increased delay
+
+    # Create a ModelState message with position and orientation
+    trajectory = ModelState()
+    trajectory.model_name = 'chief'
+    trajectory.pose.position = Vector3(80.71, 80.71, 90)  # Radius in x, y, and z axes
+    trajectory.pose.orientation = Quaternion(0, 0, 0, 1)  # Quaternion (x, y, z, w)
+
+    rospy.loginfo(f"Publishing new trajectory: Position={trajectory.pose.position}, Orientation={trajectory.pose.orientation}")
+    trajectory_pub.publish(trajectory)
+
+    # Keep the node alive for a short duration to ensure the message is sent
+    rospy.sleep(2)  # Increased delay
+
+if __name__ == '__main__':
+    try:
+        publish_trajectory_once()
+    except rospy.ROSInterruptException:
+        pass
+" this is for changing the trajectory and orientation

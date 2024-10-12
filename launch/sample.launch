@@ -1,0 +1,18 @@
+<launch>
+    <param name="robot_description" command="$(find xacro)/xacro $(find ss_sim)/urdf/chief.urdf.xacro"/>
+    <param name="robot_desc" command="$(find xacro)/xacro $(find ss_sim)/urdf/deputy.urdf.xacro"/> 
+    <param name="earth_desc" command="$(find xacro)/xacro $(find ss_sim)/urdf/earth.urdf.xacro"/> 
+    <param name="use_gui" value="true" />
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model chief  -x 677.1 -z 900 "/>
+    <node name="spawn_urdf1" pkg="gazebo_ros" type="spawn_model" args="-param robot_desc -urdf -model deputy -x 680.1 -z 900 "/>
+    <node name="spawn_urdf2" pkg="gazebo_ros" type="spawn_model" args="-param earth_desc -urdf -model earth"/>  
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="paused" value="true"/>
+      <arg name="use_sim_time" value="true"/>
+      <arg name="gui" value="true"/>
+      <arg name="headless" value="false"/>
+      <arg name="debug" value="false"/>
+    </include>
+
+
+</launch>

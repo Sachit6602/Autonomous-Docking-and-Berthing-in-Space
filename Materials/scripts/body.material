@@ -1,0 +1,15 @@
+material body/Diffuse
+{
+    receive_shadows off
+    technique
+    {
+        pass
+        {
+            texture_unit
+            {
+                texture gold.png
+                scale 1 1
+            }
+        }
+    }
+}

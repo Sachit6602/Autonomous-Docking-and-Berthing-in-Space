@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+
+<robot name="deputy" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="cameraSize" value="0.05" /> <!-- Size of square 'camera' box -->
+    <xacro:property name="cameraMass" value="0.1" />
+
+    <!-- Define macro for inertia -->
+    <xacro:macro name="inertial" params="mass">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="${mass}" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="100.0" iyz="0.0" izz="1.0" />
+        </inertial>
+    </xacro:macro>
+
+    <!-- Define macro for visual and collision -->
+    <xacro:macro name="visual_collision" params="size">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <box size="${size}" />
+            </geometry>
+            <material name="grey">
+                <color rgba="0.5 0.5 0.5 1"/>
+            </material>
+            <gravity>0</gravity>
+        </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <box size="${size}" />
+            </geometry>
+        </collision>
+    </xacro:macro>
+
+    <!-- Define body_link using macros -->
+    <link name="body_link">
+        <xacro:inertial mass="1.0" />
+        <xacro:visual_collision size="0.8 0.5 0.6" />
+    </link>
+
+    <!-- Define dock_link using macros -->
+    <link name="dock_link">
+        <xacro:inertial mass="1.0" />
+        <visual>
+            <origin rpy="1.570795 1.5670795 1.5670795" xyz="0.0 0.0 0.0"/>
+            <geometry>
+                <mesh filename="package://ss_sim/meshes/hollow_cylinder_closed.stl" scale="1 1 1"/>
+            </geometry>
+            <material name="grey">
+                <color rgba="0.5 0.5 0.5 1"/>
+            </material>
+        </visual>
+        <collision>
+            <origin rpy="1.570795 1.5670795 1.5670795" xyz="0.0 0.0 0.0"/>
+            <geometry>
+                <mesh filename="package://ss_sim/meshes/hollow_cylinder_closed.stl" scale="1 1 1"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Define dock_joint -->
+    <joint name="dock_joint" type="fixed">
+        <parent link="body_link"/>
+        <child link="dock_link"/>
+        <origin xyz="0.405 0.0 0.0" rpy="0 0 0"/>
+        <axis xyz="0.0 1.0 0.0"/>      
+    </joint>
+
+       <!-- Define plate_l using macros -->
+       <link name="plate_l">
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+        <box size="0.6 1.5 0.02"/>
+          </geometry>
+        </collision>
+    
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+        <box size="0.6 1.5 0.02"/>
+          </geometry>
+          <material name="red"/>
+        </visual>
+    
+        <inertial>
+          <mass value="${cameraMass}" />
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <box_inertia m="${cameraMass}"  x="${cameraSize}" y="${cameraSize}" z="${cameraSize}" />
+          <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+        </inertial>      
+      </link>
+  
+    <!-- Define plate_l_joint -->
+    <joint name="plate_l_joint" type="fixed">
+        <parent link="body_link"/>
+        <child link="plate_l"/>
+        <origin xyz="0.0 -0.6 0.0" rpy="0 0 0"/>
+        <axis xyz="0.0 1.0 0.0"/>      
+    </joint>
+  
+        <!-- Define plate_r using macros -->
+        <link name="plate_r">
+          <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+          <box size="0.6 1.5 0.02"/>
+            </geometry>
+          </collision>
+      
+          <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+          <box size="0.6 1.5 0.02"/>
+            </geometry>
+            <material name="red"/>
+          </visual>
+      
+          <inertial>
+            <mass value="${cameraMass}" />
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <box_inertia m="${cameraMass}"  x="${cameraSize}" y="${cameraSize}" z="${cameraSize}" />
+            <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+          </inertial>      
+        </link>
+    
+      <!-- Define plate_r_joint -->
+      <joint name="plate_r_joint" type="fixed">
+          <parent link="body_link"/>
+          <child link="plate_r"/>
+          <origin xyz="0.0 0.6 0.0" rpy="0 0 0"/>
+          <axis xyz="0.0 1.0 0.0"/>      
+      </joint>
+
+    <!-- Gazebo configuration for body_link and dock_link -->
+    <gazebo reference = "dock_link">
+		<gravity>false</gravity>
+        <self_collide>true</self_collide>
+	</gazebo>
+	<gazebo reference = "body_link">
+		<gravity>false</gravity>
+        <self_collide>true</self_collide>
+	</gazebo>
+	<gazebo reference="body_link">
+		<material>sat/body</material>
+	</gazebo>
+  <gazebo reference="plate_r">
+		<material>sat/plate</material>
+	</gazebo>
+  <gazebo reference="plate_l">
+		<material>sat/plate</material>
+	</gazebo>
+	<gazebo reference="dock_link">
+		<material>Gazebo/Grey</material>
+	</gazebo>
+
+</robot>

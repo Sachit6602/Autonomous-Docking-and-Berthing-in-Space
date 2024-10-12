@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<robot name="earth" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    
+
+    <!-- Body link definition -->
+    <link name="earth">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="1.0" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="100.0" iyz="0.0" izz="1.0" />
+        </inertial>
+        <visual>
+            <origin rpy="-1.57 -3.14 0" xyz="0 0 0" />
+            <geometry>
+                <sphere radius="637.1" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="-1.57 -3.14 0" xyz="0 0 0" />
+            <geometry>
+                <sphere radius="637.1"  />
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Gazebo configuration for body_link and dock_link -->
+    <gazebo reference="earth">
+        <gravity>0</gravity>
+        <material>planet/earth</material>
+    </gazebo>
+
+
+</robot>

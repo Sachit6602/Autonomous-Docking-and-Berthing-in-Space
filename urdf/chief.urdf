@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<robot name="chief">
+
+    <!-- Body link definition -->
+    <link name="body_link">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="1.0" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="100.0" iyz="0.0" izz="1.0" />
+        </inertial>
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <box size="1 0.6 0.6" />
+            </geometry>
+            <material name="grey">
+                <color rgba="0.5 0.5 0.5 1"/>
+            </material>
+            <gravity>0</gravity>
+        </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <box size="1 0.6 0.6" />
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Dock link definition -->
+    <link name="dock_link">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="1.0" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="100.0" iyz="0.0" izz="1.0" />
+        </inertial>
+        <visual>
+            <origin rpy="1.570795 1.5670795 1.5670795" xyz="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder radius="0.02" length="0.2"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="1.570795 1.5670795 1.5670795" xyz="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder radius="0.02" length="0.2" />
+            </geometry>
+        </collision>
+    </link>
+
+
+    <!-- Joint connecting body_link and dock_link -->
+    <joint name="dock_joint" type="fixed">
+        <parent link="body_link"/>
+        <child link="dock_link"/>
+        <origin xyz="0.6 0.0 0.0" rpy="0 0 0"/>
+        <axis xyz="0.0 1.0 0.0"/>
+    </joint>
+
+    <!-- Gazebo configuration for body_link and dock_link -->
+    <gazebo reference="body_link">
+        <gravity>0</gravity>
+        <material>Gazebo/Grey</material>
+    </gazebo>
+    <gazebo reference="dock_link">
+        <gravity>0</gravity>
+        <material>Gazebo/Grey</material>
+    </gazebo>
+
+</robot>

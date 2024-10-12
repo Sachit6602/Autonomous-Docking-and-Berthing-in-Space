@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<launch>
+    <param name="robot_description" command="$(find xacro)/xacro $(find ss_sim)/urdf/chief.urdf.xacro"/>
+
+    <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui">
+        <param name="use_gui" value="False" />
+    </node>    
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <!-- <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model chief -verbose" output="screen" />-->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ss_sim)/rviz/robot.rviz" required="true" />   
+</launch>
+  
